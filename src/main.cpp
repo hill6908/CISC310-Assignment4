@@ -1,9 +1,13 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <sstream>
+#include <iterator>
 #include "mmu.h"
 #include "pagetable.h"
 
 void printStartMessage(int page_size);
+void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory);
 
 int main(int argc, char **argv)
 {
@@ -27,8 +31,21 @@ int main(int argc, char **argv)
     std::getline (std::cin, command);
     while (command != "exit") {
         // Handle command
-        // TODO: implement this!
+        // use a vector to hold all the inputs to the command line
+    	std::istringstream iss(command);
 
+    	//found at: https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/
+    	std::vector<std::string> input (std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
+    
+    	/* For bug-fixing purposes:
+    	for(std::size_t i = 0; i < input.size(); i ++)
+    	{
+    		//print the command at input[i]
+    		std::cout << input[i];
+    	}
+		*/ 
+
+    	parseCommandLineInput(input,memory);
         // Get next command
         std::cout << "> ";
         std::getline (std::cin, command);
@@ -36,6 +53,51 @@ int main(int argc, char **argv)
 
 
     return 0;
+}
+
+void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory)
+{
+	//takes in the vector of inputs, parses them and does the appropriate action
+	//a little clunky, can be changed! 
+	if(input[0] == "create")
+	{
+		//std::cout << "We are creating!" <<std::endl;
+	}
+	else if(input[0] == "allocate")
+	{
+
+	}
+	else if(input[0] == "set")
+	{
+
+	}
+	else if(input[0] == "print")
+	{
+		/*print options: 
+			print processes
+			print page
+			print mmu
+			print PID var_name (e.g.)
+				*/ 
+		if(input[1] == "page")
+		{
+			//print pagetable
+		}
+
+		else if(input[1] == "mmu")
+		{
+			//print mmu table
+		}
+	}
+	else if(input[0] == "free")
+	{
+
+	}
+
+	else if(input[0] == "terminate")
+	{
+
+	}
 }
 
 void printStartMessage(int page_size)
