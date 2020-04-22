@@ -7,7 +7,7 @@
 #include "pagetable.h"
 
 void printStartMessage(int page_size);
-void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory);
+void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, PageTable *page_table, Mmu *mmu);
 
 int main(int argc, char **argv)
 {
@@ -24,6 +24,10 @@ int main(int argc, char **argv)
 
     // Create physical 'memory'
     uint8_t *memory = new uint8_t[67108864]; // 64 MB (64 * 1024 * 1024)
+
+    //Creates the page table
+    PageTable *page_table = new PageTable(page_size);
+    Mmu *mmu = new Mmu(67108864);
 
     // Prompt loop
     std::string command;
@@ -45,7 +49,7 @@ int main(int argc, char **argv)
     	}
 		*/ 
 
-    	parseCommandLineInput(input,memory);
+    	parseCommandLineInput(input,memory,page_table,mmu);
         // Get next command
         std::cout << "> ";
         std::getline (std::cin, command);
@@ -55,13 +59,18 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory)
+void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, PageTable *page_table, Mmu *mmu)
 {
 	//takes in the vector of inputs, parses them and does the appropriate action
 	//a little clunky, can be changed! 
 	if(input[0] == "create")
 	{
 		//std::cout << "We are creating!" <<std::endl;
+        int text_size = std::stoi(input[1]);
+        int data_size = std::stoi(input[2]);
+        int pid = mmu->createProcess();
+        mmu->createAllocate(pid, text_size, data_size);
+        std::cout << pid << std::endl;
 	}
 	else if(input[0] == "allocate")
 	{
@@ -87,7 +96,11 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory)
 		else if(input[1] == "mmu")
 		{
 			//print mmu table
+            mmu->printMmu();
 		}
+        else if (input[1] == "processes"){
+            mmu->printProcesses();
+        }
 	}
 	else if(input[0] == "free")
 	{

@@ -27,7 +27,10 @@ public:
     ~Mmu();
 
     uint32_t createProcess();
-    void print();
+    void printMmu();
+    void printProcesses();
+    void createAllocate(int pid, int text_size, int data_size);
+    uint32_t allocate(int pid, std::string var_name, std::string data_type, int number_of_elements);
 };
 
 #endif // __MMU_H_
