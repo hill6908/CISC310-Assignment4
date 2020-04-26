@@ -93,7 +93,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 				*/ 
 		if(input[1] == "page")
 		{
-			//print pagetable
+			page_table->print();
 		}
 
 		else if(input[1] == "mmu")

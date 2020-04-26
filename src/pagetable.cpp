@@ -3,10 +3,17 @@
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
+    _current_page_num = 0;
 }
 
 PageTable::~PageTable()
 {
+
+}
+
+int PageTable::getPageNumber()
+{
+    return _current_page_num;
 }
 
 void PageTable::addEntry(uint32_t pid, int page_number)
@@ -17,8 +24,16 @@ void PageTable::addEntry(uint32_t pid, int page_number)
     // Find free frame
     // TODO: implement this!
     int frame = 0; 
+
+    
     _table[entry] = frame;
 }
+
+/*int PageTable::allocate(int pid, std::string data_type, int number_of_elements)
+{
+
+
+}*/
 
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
 {
@@ -46,13 +61,20 @@ int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
 
 void PageTable::print()
 {
-    std::map<std::string, int>::iterator it;
+    std::map<std::string, int>::iterator it = _table.begin();
 
     std::cout << " PID  | Page Number | Frame Number" << std::endl;
     std::cout << "------+-------------+--------------" << std::endl;
 
-    for (it = _table.begin(); it != _table.end(); it++)
+    for(std::pair<std::string,int> element : _table )
     {
-        // TODO: print all pages
+        std::string pid_page = element.first;
+        int frame = element.second;
+
+        std::string delim = "|";
+        std::string pid = pid_page.substr(0,pid_page.find(delim));
+        std::string page = pid_page.substr(pid_page.find(delim) + 1, pid_page.length());
+
+        std::cout << pid <<" | \t\t\t" << page << " | \t\t\t" << frame <<std::endl;
     }
 }
