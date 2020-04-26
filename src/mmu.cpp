@@ -54,7 +54,46 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
 }
 
 uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int number_of_elements){
-    return 0;
+
+    //find the process with the matching pid
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    Variable *newVar = new Variable();
+    newVar->name = var_name;
+
+    //set the size of the variables on the stack
+    if(data_type == "char")
+    {
+        newVar->size = number_of_elements;
+    }
+    else if(data_type == "short")
+    {
+        newVar->size = (2*number_of_elements);
+    }
+    else if(data_type == "int" || data_type == "float")
+    {
+        newVar->size = (4*number_of_elements);
+    }
+    else //its a long or a double
+    {
+        newVar->size = (8*number_of_elements);
+    }
+
+    /* need to retrieve the last variable on the stack, get that virtual address 
+        and add the size to it to make the new virtual address
+    */
+    Variable *backVar = new Variable();
+    backVar = proc->variables.back();
+
+    newVar->virtual_address = backVar->virtual_address + backVar->size;
+    proc->variables.push_back(newVar);
+
+    return newVar->virtual_address;
 }
 
 void Mmu::printMmu()
@@ -67,7 +106,7 @@ void Mmu::printMmu()
     {
         for (j = 0; j < _processes[i]->variables.size(); j++)
         {
-            // TODO: print all variables (excluding <FREE_SPACE> entries)
+            // print all variables (excluding <FREE_SPACE> entries)
             if (_processes[i]->variables[j]->name != "<FREE_SPACE>"){
                 printf("%5d | %13s |   0x%08X | %10d\n", _processes[i]->pid, _processes[i]->variables[j]->name.c_str(), _processes[i]->variables[j]->virtual_address, _processes[i]->variables[j]->size);
             }

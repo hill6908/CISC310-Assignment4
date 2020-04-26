@@ -65,7 +65,6 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 	//a little clunky, can be changed! 
 	if(input[0] == "create")
 	{
-		//std::cout << "We are creating!" <<std::endl;
         int text_size = std::stoi(input[1]);
         int data_size = std::stoi(input[2]);
         int pid = mmu->createProcess();
@@ -73,12 +72,16 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         std::cout << pid << std::endl;
 	}
 	else if(input[0] == "allocate")
-	{
-
+	{ 
+		//<PID><var_name><data_type><number_of_elements>
+		/* allocate memory on the heap, print the virtual memory address	*/ 
+		int virutal_mem = mmu->allocate(std::stoi(input[1]),input[2],input[3],std::stoi(input[4]));
 	}
 	else if(input[0] == "set")
 	{
-
+		//<PID><var_name><offset><value_0><value_1><value2>...<valueN>
+		/* set the value for variable <var_name> starting at <offset> 
+			multiple contiguous vales can be set with one command		*/ 
 	}
 	else if(input[0] == "print")
 	{
@@ -101,10 +104,17 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         else if (input[1] == "processes"){
             mmu->printProcesses();
         }
+
+        /*	check if the input[1] contains digits for a process print*/
+        else if (isdigit(input[1][0]))
+        {
+        	//pass pid and name
+        }
 	}
 	else if(input[0] == "free")
 	{
-
+		//free <PID> <var_name>
+		/* deallocate memory on the heap that is associated with <var_name>		*/
 	}
 
 	else if(input[0] == "terminate")
