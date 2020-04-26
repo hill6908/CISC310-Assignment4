@@ -4,6 +4,7 @@ PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
     _current_page_num = 0;
+    _current_frame = 0;
 }
 
 PageTable::~PageTable()
@@ -23,10 +24,22 @@ void PageTable::addEntry(uint32_t pid, int page_number)
 
     // Find free frame
     // TODO: implement this!
-    int frame = 0; 
+    if(_current_page_num > 512)
+    {
+        std::cout<< "Allocation would exceed system memory. ";
+    }
 
-    
-    _table[entry] = frame;
+    else
+    {
+        int frame = _current_frame;
+        _table[entry] = frame;
+        
+        _current_frame += 1;
+        _current_page_num +=1;
+    }
+
+
+
 }
 
 /*int PageTable::allocate(int pid, std::string data_type, int number_of_elements)

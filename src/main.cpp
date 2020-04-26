@@ -76,12 +76,17 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		//<PID><var_name><data_type><number_of_elements>
 		/* allocate memory on the heap, print the virtual memory address	*/ 
 		int virutal_mem = mmu->allocate(std::stoi(input[1]),input[2],input[3],std::stoi(input[4]));
+		int page_num = page_table->getPageNumber();
+
+		page_table->addEntry(std::stoi(input[1]),page_num);
+
 	}
 	else if(input[0] == "set")
 	{
 		//<PID><var_name><offset><value_0><value_1><value2>...<valueN>
 		/* set the value for variable <var_name> starting at <offset> 
-			multiple contiguous vales can be set with one command		*/ 
+			multiple contiguous vales can be set with one command		*/
+		 
 	}
 	else if(input[0] == "print")
 	{

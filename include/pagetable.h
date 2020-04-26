@@ -9,6 +9,7 @@ class PageTable {
 private:
     int _page_size;
     int _current_page_num;
+    int _current_frame;
     std::map<std::string, int> _table;
 
 public:
