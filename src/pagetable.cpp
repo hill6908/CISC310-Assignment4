@@ -24,7 +24,9 @@ void PageTable::addEntry(uint32_t pid, int page_number)
 
     // Find free frame
     // TODO: implement this!
-    if(_current_page_num > 512)
+
+    //memory / page size = max number of pages 
+    if(_current_page_num > 67108864 / _page_size)
     {
         std::cout<< "Allocation would exceed system memory. ";
     }
@@ -37,9 +39,6 @@ void PageTable::addEntry(uint32_t pid, int page_number)
         _current_frame += 1;
         _current_page_num +=1;
     }
-
-
-
 }
 
 /*int PageTable::allocate(int pid, std::string data_type, int number_of_elements)
@@ -86,8 +85,19 @@ void PageTable::print()
 
         std::string delim = "|";
         std::string pid = pid_page.substr(0,pid_page.find(delim));
-        std::string page = pid_page.substr(pid_page.find(delim) + 1, pid_page.length());
+        int page = std::stoi(pid_page.substr(pid_page.find(delim) + 1, pid_page.length()));
 
-        std::cout << pid <<" | \t\t\t" << page << " | \t\t\t" << frame <<std::endl;
+        if(page < 10)
+        {
+            std::cout << pid <<" |           " << page << " |           " << frame <<std::endl;
+        }
+        else if (page > 10 && page < 100)
+        {
+            std::cout << pid <<" |          " << page << " |           " << frame << std::endl;
+        }
+        else
+        {
+            std::cout<< pid << " |         " << page << " |           " << frame <<std::endl;
+        }
     }
 }

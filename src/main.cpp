@@ -86,7 +86,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		//<PID><var_name><offset><value_0><value_1><value2>...<valueN>
 		/* set the value for variable <var_name> starting at <offset> 
 			multiple contiguous vales can be set with one command		*/
-		 
+
 	}
 	else if(input[0] == "print")
 	{
@@ -113,7 +113,30 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         /*	check if the input[1] contains digits for a process print*/
         else if (isdigit(input[1][0]))
         {
-        	//pass pid and name
+        	//pass pid and name, print value of the variable for that process 
+        	int virtual_add = mmu->getVirtualAddress(std::stoi(input[1]),input[2]);
+        	int number_elements = mmu ->getNumVariables(std::stoi(input[1]),input[2]);
+        	int physcial_add = page_table->getPhysicalAddress(std::stoi(input[1]),virtual_add);
+
+        	int i = 0;
+        	while(i < number_elements || i <= 4)
+        	{
+        		//for comma formatting:
+        		if(i == number_elements-1)
+        		{
+        			std::cout << memory[physcial_add+i]; 
+        		}
+        		else
+        		{
+        			std::cout << memory[physcial_add+i] << ", ";
+        		}
+        		if(i == 4)
+        		{
+        			int remainder = number_elements - 4;
+        			std::cout << "... [" << remainder << "]" <<std::endl;
+        		}
+        	}
+        	
         }
 	}
 	else if(input[0] == "free")
@@ -124,7 +147,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 
 	else if(input[0] == "terminate")
 	{
-
+		
 	}
 }
 

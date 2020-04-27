@@ -4,11 +4,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <typeinfo>
 
 typedef struct Variable {
     std::string name;
     int virtual_address;
     int size;
+    int number_elements;
 } Variable;
 
 typedef struct Process {
@@ -26,6 +28,8 @@ public:
     Mmu(int memory_size);
     ~Mmu();
 
+    int getNumVariables(int pid, std::string name);
+    int getVirtualAddress(int pid, std::string name);
     uint32_t createProcess();
     void printMmu();
     void printProcesses();

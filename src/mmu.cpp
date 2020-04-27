@@ -19,12 +19,54 @@ uint32_t Mmu::createProcess()
     var->name = "<FREE_SPACE>";
     var->virtual_address = 0;
     var->size = _max_size;
+    var->number_elements = 0;
     proc->variables.push_back(var);
 
     _processes.push_back(proc);
 
     _next_pid++;
     return proc->pid;
+}
+
+int Mmu::getNumVariables(int pid, std::string name)
+{
+    /*  use typeid to get the type and divide by the size of 
+        the type to get the number of values    */
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size();j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            return proc->variables[j]->number_elements;
+        }
+    }
+
+}
+
+//returns the virutal address for a variable in a process with pid and name 
+int Mmu::getVirtualAddress(int pid, std::string name)
+{
+     Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size(); j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            return proc->variables[j]->virtual_address;
+        }
+    }
+
 }
 
 void Mmu::createAllocate(int pid, int text_size, int data_size){
@@ -37,7 +79,7 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
     Variable *var = new Variable();
     var->name = "<TEXT>";
     var->virtual_address = 0;
-    var->size = text_size;
+    var->size = text_size;;
     proc->variables.push_back(var);
 
     Variable *var1 = new Variable();
@@ -90,6 +132,7 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
     Variable *backVar = new Variable();
     backVar = proc->variables.back();
 
+    newVar->number_elements = number_of_elements;
     newVar->virtual_address = backVar->virtual_address + backVar->size;
     proc->variables.push_back(newVar);
 
@@ -112,6 +155,11 @@ void Mmu::printMmu()
             }
         }
     }
+}
+
+void Mmu::terminateProcess()
+{
+    
 }
 
 void Mmu::printProcesses(){
