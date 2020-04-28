@@ -3,8 +3,6 @@
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
-    _current_page_num = 0;
-    _current_frame = 0;
 }
 
 PageTable::~PageTable()
@@ -12,36 +10,47 @@ PageTable::~PageTable()
 
 }
 
-int PageTable::getPageNumber()
+int PageTable::getPageNumber(int virtual_address)
 {
-    return _current_page_num;
+    int page_number = virtual_address / _page_size;
+    std::cout << "page number = " <<page_number << " and page offset = " << virtual_address % _page_size <<std::endl;
+    return page_number;
 }
 
 void PageTable::addEntry(uint32_t pid, int page_number)
 {
+    //std::cout << "In add entry" <<std::endl;
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
 
     // Find free frame
     // TODO: implement this!
+    //iterate through the map and find the last value of a frame & add 1?
+    int frame = 0;
+   // std::cout << "Before for" <<std::endl;
+    for (auto it : _table)
+    {
+        if(it.second > frame)
+        {
+            frame = it.second + 1;
+            std::cout << "frame: " << frame <<std::endl;
+        }
+    }
 
+    //std::cout << "frame = " << frame <<std::endl;
     //memory / page size = max number of pages 
-    if(_current_page_num > 67108864 / _page_size)
+    if(page_number > 67108864 / _page_size)
     {
         std::cout<< "Allocation would exceed system memory. ";
     }
 
     else
     {
-        int frame = _current_frame;
         _table[entry] = frame;
-        
-        _current_frame += 1;
-        _current_page_num +=1;
     }
 }
 
-/*int PageTable::allocate(int pid, std::string data_type, int number_of_elements)
+/*int PageTable::allocate(int pid,  int number_of_elements)
 {
 
 

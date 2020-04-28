@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <typeinfo>
 
 typedef struct Variable {
     std::string name;
@@ -28,6 +27,7 @@ public:
     Mmu(int memory_size);
     ~Mmu();
 
+    int setValues(int pid, std::string name, int offset);
     int getNumVariables(int pid, std::string name);
     int getVirtualAddress(int pid, std::string name);
     uint32_t createProcess();

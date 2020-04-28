@@ -132,11 +132,36 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
     Variable *backVar = new Variable();
     backVar = proc->variables.back();
 
+    std::cout << "previous var" << backVar->name <<std::endl;
+
     newVar->number_elements = number_of_elements;
     newVar->virtual_address = backVar->virtual_address + backVar->size;
+    std::cout << backVar->virtual_address << " + " <<backVar->size <<std::endl;
     proc->variables.push_back(newVar);
 
+    std::cout << newVar->virtual_address <<std::endl;
     return newVar->virtual_address;
+}
+
+int Mmu::setValues(int pid, std::string name, int offset)
+{
+    //return the virtual address to be passed to the page table for conversion
+     Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size(); j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            int size_of_elements = proc->variables[j]->size / proc->variables[j]->number_elements;
+            return proc->variables[j]->virtual_address + (offset * size_of_elements);
+        }
+    }
+
 }
 
 void Mmu::printMmu()
@@ -157,10 +182,6 @@ void Mmu::printMmu()
     }
 }
 
-void Mmu::terminateProcess()
-{
-    
-}
 
 void Mmu::printProcesses(){
     for (int i = 0; i < _processes.size(); i++){
