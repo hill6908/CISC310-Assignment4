@@ -35,6 +35,7 @@ public:
     void printProcesses();
     void createAllocate(int pid, int text_size, int data_size);
     uint32_t allocate(int pid, std::string var_name, std::string data_type, int number_of_elements);
+    void terminate(int pid);
 };
 
 #endif // __MMU_H_

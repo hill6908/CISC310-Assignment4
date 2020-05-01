@@ -86,17 +86,17 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 	}
 	else if(input[0] == "set")
 	{
-		//<PID><var_name><offset><value_0><value_1><value2>...<valueN>
+		//set <PID><var_name><offset><value_0><value_1><value2>...<valueN>
 		/* set the value for variable <var_name> starting at <offset> 
 			multiple contiguous vales can be set with one command		*/
 
-		int pid = std::stoi(input[0]);
+		int pid = std::stoi(input[1]);
 		int virt_add = 0;
 		int phys_add = 0;
 		//loop through through the values in input 
-		for(int i = 2; i < input.size(); i ++)
+		for(int i = 4; i < input.size(); i ++)
 		{
-			virt_add = mmu->setValues(pid,input[1],std::stoi(input[2]));
+			virt_add = mmu->setValues(pid,input[2],std::stoi(input[3]));
 			phys_add = page_table->getPhysicalAddress(pid,virt_add);
 			//memory[phys_add] = input[i];
 		}
@@ -126,7 +126,8 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         /*	check if the input[1] contains digits for a process print*/
         else if (isdigit(input[1][0]))
         {
-        	//pass pid and name, print value of the variable for that process 
+        	std::cout << "Here" << std::endl;
+            //pass pid and name, print value of the variable for that process 
         	int virtual_add = mmu->getVirtualAddress(std::stoi(input[1]),input[2]);
         	int number_elements = mmu ->getNumVariables(std::stoi(input[1]),input[2]);
         	int physcial_add = page_table->getPhysicalAddress(std::stoi(input[1]),virtual_add);
@@ -160,7 +161,9 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 
 	else if(input[0] == "terminate")
 	{
+        int pid = stoi(input[1]);
 
+        mmu->terminate(pid);
 	}
 }
 

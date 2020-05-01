@@ -146,7 +146,7 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
 int Mmu::setValues(int pid, std::string name, int offset)
 {
     //return the virtual address to be passed to the page table for conversion
-     Process *proc;
+    Process *proc;
     for (int i = 0; i < _processes.size(); i++){
         if (_processes[i]->pid == pid){
             proc = _processes[i];
@@ -186,5 +186,14 @@ void Mmu::printMmu()
 void Mmu::printProcesses(){
     for (int i = 0; i < _processes.size(); i++){
         std::cout << _processes[i]->pid << std::endl;
+    }
+}
+
+void Mmu::terminate(int pid){
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            _processes.erase(_processes.begin() + i);
+            break;
+        }
     }
 }
