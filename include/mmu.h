@@ -32,6 +32,7 @@ public:
     int getVirtualAddress(int pid, std::string name);
     uint32_t createProcess();
     void printMmu();
+    void free(int pid, std::string name);
     void printProcesses();
     void createAllocate(int pid, int text_size, int data_size);
     uint32_t allocate(int pid, std::string var_name, std::string data_type, int number_of_elements);

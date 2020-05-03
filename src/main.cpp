@@ -176,6 +176,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 	{
 		//free <PID> <var_name>
 		/* deallocate memory on the heap that is associated with <var_name>		*/
+		mmu->free(std::stoi(input[1]),input[2]);
 	}
 
 	else if(input[0] == "terminate")

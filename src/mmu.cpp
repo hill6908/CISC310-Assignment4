@@ -207,6 +207,27 @@ int Mmu::setValues(int pid, std::string name, int offset)
 
 }
 
+void Mmu::free(int pid, std::string name)
+{
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size(); j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            proc->variables[j]->name = "<FREE_SPACE>";
+            proc->variables[j]->number_elements = 0;
+        }
+
+    }
+
+}
+
 void Mmu::printMmu()
 {
     int i, j;
