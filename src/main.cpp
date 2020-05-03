@@ -107,17 +107,34 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		int pid = std::stoi(input[1]);
 		int virt_add = 0;
 		int phys_add = 0;
+        int offset = std::stoi(input[3]);
+        int typeOffset = 0;
+        std::string type = mmu->getType(pid, input[2]);
+
+        if (type == "char"){
+            typeOffset = 1;
+        }
+        else if (type == "short"){
+            typeOffset = 2;
+        }
+        else if (type == "int" || type == "float"){
+            typeOffset = 4;
+        }
+        else if (type == "long" || type == "double"){
+            typeOffset = 8;
+        }
+
 		//loop through through the values in input 
 		for(int i = 4; i < input.size(); i ++)
 		{
 			//need to determine the type of the input 
 			std::cout << "before virt and phys find "<<std::endl;
-			virt_add = mmu->setValues(pid,input[2],std::stoi(input[3]));
+			virt_add = mmu->setValues(pid,input[2],offset);
 			phys_add = page_table->getPhysicalAddress(pid,virt_add);
 			
 			//need to be able to store all types of values here: 
 			std::cout << "Input to set is: " << input[i] <<std::endl;
-			memory[phys_add] = std::stoi(input[i]);
+			memory[phys_add + ((i - 4) * typeOffset)] = std::stoi(input[i]);
 		}
 	}
 	else if(input[0] == "print")
@@ -153,7 +170,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
             std::string type = mmu->getType(pid, input[2]);
 
         	int i = 0;
-        	while(i < number_elements || i <= 4)
+        	while(i < number_elements)
         	{
         		//for comma formatting:
         		if(i == number_elements-1)
@@ -163,29 +180,28 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                         break;
                     }
                     else if (type == "short"){
-                        std::cout << (short)memory[physcial_add+i];
+                        std::cout << (short)memory[physcial_add+(i*2)];
                         break;
                     }
                     else if (type == "int"){
-                        std::cout << (int)memory[physcial_add+i];
+                        std::cout << (int)memory[physcial_add+(i*4)];
                         break;
                     }
                     else if (type == "float"){
-                        std::cout << (float)memory[physcial_add+i];
+                        std::cout << (float)memory[physcial_add+(i*4)];
                         break;
                     }
                     else if (type == "long"){
-                        std::cout << (long)memory[physcial_add+i];
+                        std::cout << (long)memory[physcial_add+(i*8)];
                         break;
                     }
                     else if (type == "double"){
-                        std::cout << (double)memory[physcial_add+i];
+                        std::cout << (double)memory[physcial_add+(i*8)];
                         break;
                     }
         		}
         		else
         		{
-        			std::cout << memory[physcial_add+i] << ", ";
                     if (type == "char"){
                         std::cout << memory[physcial_add+i] << ", ";
                     }
@@ -209,6 +225,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         		{
         			int remainder = number_elements - 4;
         			std::cout << "... [" << remainder << "]";
+                    break;
         		}
                 i++;
         	}
