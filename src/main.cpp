@@ -145,11 +145,12 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         /*	check if the input[1] contains digits for a process print*/
         else if (isdigit(input[1][0]))
         {
-        	std::cout << "Here" << std::endl;
+        	int pid = std::stoi(input[1]);
             //pass pid and name, print value of the variable for that process 
-        	int virtual_add = mmu->getVirtualAddress(std::stoi(input[1]),input[2]);
-        	int number_elements = mmu ->getNumVariables(std::stoi(input[1]),input[2]);
-        	int physcial_add = page_table->getPhysicalAddress(std::stoi(input[1]),virtual_add);
+        	int virtual_add = mmu->getVirtualAddress(pid,input[2]);
+        	int number_elements = mmu->getNumVariables(pid,input[2]);
+        	int physcial_add = page_table->getPhysicalAddress(pid,virtual_add);
+            std::string type = mmu->getType(pid, input[2]);
 
         	int i = 0;
         	while(i < number_elements || i <= 4)
@@ -157,26 +158,69 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         		//for comma formatting:
         		if(i == number_elements-1)
         		{
-        			std::cout << memory[physcial_add+i]; 
+        			if (type == "char"){
+                        std::cout << memory[physcial_add+i];
+                        break;
+                    }
+                    else if (type == "short"){
+                        std::cout << (short)memory[physcial_add+i];
+                        break;
+                    }
+                    else if (type == "int"){
+                        std::cout << (int)memory[physcial_add+i];
+                        break;
+                    }
+                    else if (type == "float"){
+                        std::cout << (float)memory[physcial_add+i];
+                        break;
+                    }
+                    else if (type == "long"){
+                        std::cout << (long)memory[physcial_add+i];
+                        break;
+                    }
+                    else if (type == "double"){
+                        std::cout << (double)memory[physcial_add+i];
+                        break;
+                    }
         		}
         		else
         		{
         			std::cout << memory[physcial_add+i] << ", ";
+                    if (type == "char"){
+                        std::cout << memory[physcial_add+i] << ", ";
+                    }
+                    else if (type == "short"){
+                        std::cout << (short)memory[physcial_add+i] << ", ";
+                    }
+                    else if (type == "int"){
+                        std::cout << (int)memory[physcial_add+i] << ", ";
+                    }
+                    else if (type == "float"){
+                        std::cout << (float)memory[physcial_add+i] << ", ";
+                    }
+                    else if (type == "long"){
+                        std::cout << (long)memory[physcial_add+i] << ", ";
+                    }
+                    else if (type == "double"){
+                        std::cout << (double)memory[physcial_add+i] << ", ";
+                    }
         		}
         		if(i == 4)
         		{
         			int remainder = number_elements - 4;
-        			std::cout << "... [" << remainder << "]" <<std::endl;
+        			std::cout << "... [" << remainder << "]";
         		}
+                i++;
         	}
-        	
+        	std::cout << "\n";
         }
 	}
 	else if(input[0] == "free")
 	{
 		//free <PID> <var_name>
 		/* deallocate memory on the heap that is associated with <var_name>		*/
-		mmu->free(std::stoi(input[1]),input[2]);
+        int pid = std::stoi(input[1]);
+		mmu->free(pid,input[2]);
 	}
 
 	else if(input[0] == "terminate")

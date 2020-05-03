@@ -10,6 +10,7 @@ typedef struct Variable {
     int virtual_address;
     int size;
     int number_elements;
+    std::string type;
 } Variable;
 
 typedef struct Process {
@@ -37,6 +38,7 @@ public:
     void createAllocate(int pid, int text_size, int data_size);
     uint32_t allocate(int pid, std::string var_name, std::string data_type, int number_of_elements);
     void terminate(int pid);
+    std::string getType(int pid, std::string name);
 };
 
 #endif // __MMU_H_
