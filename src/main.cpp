@@ -70,6 +70,19 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         int data_size = std::stoi(input[2]);
         int pid = mmu->createProcess();
         mmu->createAllocate(pid, text_size, data_size);
+
+        int text_va = mmu->getVirtualAddress(pid,"<TEXT>");
+        int data_va = mmu->getVirtualAddress(pid,"<GLOBALS>");
+        int stack_va = mmu->getVirtualAddress(pid,"<STACK>");
+
+        int text_pg = page_table->getPageNumber(text_va);
+        int data_pg = page_table->getPageNumber(data_va);
+        int stack_pg = page_table->getPageNumber(stack_va);
+
+        page_table->addEntry(pid,text_pg);
+        page_table->addEntry(pid,data_pg);
+        page_table->addEntry(pid,stack_pg);
+
         std::cout << pid << std::endl;
 	}
 	else if(input[0] == "allocate")
@@ -90,15 +103,21 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		/* set the value for variable <var_name> starting at <offset> 
 			multiple contiguous vales can be set with one command		*/
 
+		std::cout << "in set" <<std::endl;
 		int pid = std::stoi(input[1]);
 		int virt_add = 0;
 		int phys_add = 0;
 		//loop through through the values in input 
 		for(int i = 4; i < input.size(); i ++)
 		{
+			//need to determine the type of the input 
+			std::cout << "before virt and phys find "<<std::endl;
 			virt_add = mmu->setValues(pid,input[2],std::stoi(input[3]));
 			phys_add = page_table->getPhysicalAddress(pid,virt_add);
-			//memory[phys_add] = input[i];
+			
+			//need to be able to store all types of values here: 
+			std::cout << "Input to set is: " << input[i] <<std::endl;
+			memory[phys_add] = std::stoi(input[i]);
 		}
 	}
 	else if(input[0] == "print")

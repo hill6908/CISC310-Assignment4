@@ -3,12 +3,13 @@
 
 #include <iostream>
 #include <string>
-#include <algorithm>
 #include <map>
+#include <array>
 
 class PageTable {
 private:
     int _page_size;
+    int current_page;
     std::map<std::string, int> _table;
 
 public:
@@ -18,6 +19,7 @@ public:
     int getPageNumber(int virtual_address);
     void addEntry(uint32_t pid, int page_number);
     int getPhysicalAddress(uint32_t pid, int virtual_address);
+    //void create(int pid, int text_size, int data_size);
     void print();
 };
 

@@ -66,7 +66,6 @@ int Mmu::getVirtualAddress(int pid, std::string name)
             return proc->variables[j]->virtual_address;
         }
     }
-
 }
 
 void Mmu::createAllocate(int pid, int text_size, int data_size){
@@ -76,6 +75,13 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
             proc = _processes[i];
         }
     }
+
+    //move the free space to after the text, globals, stack 
+
+    Variable *free = new Variable();
+    free = proc->variables[0];
+    proc->variables.erase(proc->variables.begin());
+
     Variable *var = new Variable();
     var->name = "<TEXT>";
     var->virtual_address = 0;
@@ -93,6 +99,17 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
     var2->virtual_address = text_size + data_size;
     var2->size = 65536;
     proc->variables.push_back(var2);
+
+    free->virtual_address = text_size + data_size + 65536;
+
+    proc->variables.push_back(free);
+    for(int i = 0; i < proc->variables.size(); i++)
+    {
+        if(proc->variables[i]->name == "<FREE_SPACE>")
+        {
+            std::cout<< "Free space at: " << i << std::endl;
+        }
+    }
 }
 
 uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int number_of_elements){
@@ -126,21 +143,47 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
         newVar->size = (8*number_of_elements);
     }
 
-    /* need to retrieve the last variable on the stack, get that virtual address 
-        and add the size to it to make the new virtual address
-    */
-    Variable *backVar = new Variable();
-    backVar = proc->variables.back();
-
-    std::cout << "previous var" << backVar->name <<std::endl;
-
     newVar->number_elements = number_of_elements;
-    newVar->virtual_address = backVar->virtual_address + backVar->size;
-    std::cout << backVar->virtual_address << " + " <<backVar->size <<std::endl;
-    proc->variables.push_back(newVar);
+   
+    /*  add the variable at the end of the free variable, make the free variable size smaller
+        the virtual address is going to be the virtual address of the free variable + the new 
+        size of the virtual address */
+    
+    Variable *space = new Variable(); 
+    for(int i = 0; i < proc->variables.size(); i ++)
+    {
+        if(proc->variables[i]->name == "<FREE_SPACE>" && proc->variables[i]->size >= newVar->size)
+        {
+            std::cout << "free space" << std::endl;
+            //found the free space 
+            space = proc->variables[i];
 
-    std::cout << newVar->virtual_address <<std::endl;
-    return newVar->virtual_address;
+            //pop the free space off? 
+            //proc->variables.erase(proc->variables[i]);
+            if(proc->variables[i] != proc->variables.back())
+            {
+                //next variable isn't a free space 
+                //virtual address and size stays the same 
+                space->name = newVar->name;
+                space->number_elements = newVar->number_elements;
+                std::cout << space->virtual_address <<std::endl;
+                return space->virtual_address;
+            }
+
+            else
+            {
+                //the free variable the only thing left the vector, need to update the free space 
+                proc->variables.erase(proc->variables.begin() + i);
+                newVar->virtual_address = space->virtual_address;
+                space->virtual_address = newVar->virtual_address + newVar->size;
+                proc->variables.push_back(newVar);
+                proc->variables.push_back(space);
+                std::cout << newVar->virtual_address <<std::endl;
+                return newVar->virtual_address;
+
+            }
+        }
+    }
 }
 
 int Mmu::setValues(int pid, std::string name, int offset)

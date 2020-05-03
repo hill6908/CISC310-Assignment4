@@ -3,6 +3,7 @@
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
+    current_page = 0;
 }
 
 PageTable::~PageTable()
@@ -14,6 +15,7 @@ int PageTable::getPageNumber(int virtual_address)
 {
     int page_number = virtual_address / _page_size;
     std::cout << "page number = " <<page_number << " and page offset = " << virtual_address % _page_size <<std::endl;
+
     return page_number;
 }
 
@@ -49,6 +51,17 @@ void PageTable::addEntry(uint32_t pid, int page_number)
         _table[entry] = frame;
     }
 }
+
+/*
+void PageTable::create(int pid, int text_size, int data_size)
+{
+    //virtual address = pageNumber * page_size
+    if(text_size + data_size < _page_size)
+    {
+        //text and data can go on the same page
+        addEntry(pid,0);
+    }
+}*/
 
 /*int PageTable::allocate(int pid,  int number_of_elements)
 {
@@ -98,11 +111,11 @@ void PageTable::print()
 
         if(page < 10)
         {
-            std::cout << pid <<" |           " << page << " |           " << frame <<std::endl;
+            std::cout << pid <<"  |           " << page << " |           " << frame <<std::endl;
         }
         else if (page > 10 && page < 100)
         {
-            std::cout << pid <<" |          " << page << " |           " << frame << std::endl;
+            std::cout << pid <<"  |          " << page << " |           " << frame << std::endl;
         }
         else
         {
