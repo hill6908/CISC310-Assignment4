@@ -134,7 +134,6 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 			
 			//need to be able to store all types of values here: 
 			std::cout << "Input to set is: " << input[i] <<std::endl;
-            std::cout << phys_add << std::endl;
             if (type == "char"){
                 memory[phys_add + ((i - 4) * typeOffset)] = input[i].c_str()[0];
             }
@@ -316,6 +315,11 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                         break;
                     }
         		}
+                else if (i == 4){
+                    int remainder = number_elements;
+                    std::cout << "... [" << remainder << " items]";
+                    break;
+                }
         		else
         		{
                     if (type == "char"){
@@ -368,12 +372,6 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                         }
                         std::cout << endValue << ", ";
                     }
-        		}
-        		if(i == 4)
-        		{
-        			int remainder = number_elements - 4;
-        			std::cout << "... [" << remainder << "]";
-                    break;
         		}
                 i++;
         	}
