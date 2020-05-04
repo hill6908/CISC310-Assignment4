@@ -244,15 +244,15 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         /*	check if the input[1] contains digits for a process print*/
         else if (isdigit(input[1][0]))
         {
-        	int pid = std::stoi(input[1]);
+        	int pid = std::stoi(input[1].substr(0, input[1].find(':')));
+            std::string var = input[1].substr(input[1].find(':')+1, input[1].length() - input[1].find(':')-1);
             //pass pid and name, print value of the variable for that process 
-        	int virtual_add = mmu->getVirtualAddress(pid,input[2]);
-        	int number_elements = mmu->getNumVariables(pid,input[2]);
+        	int virtual_add = mmu->getVirtualAddress(pid,var);
+        	int number_elements = mmu->getNumVariables(pid,var);
         	int physcial_add = page_table->getPhysicalAddress(pid,virtual_add);
-            std::string type = mmu->getType(pid, input[2]);
+            std::string type = mmu->getType(pid, var);
 
         	int i = 0;
-            std::cout << physcial_add << std::endl;
         	while(i < number_elements)
         	{
         		//for comma formatting:
