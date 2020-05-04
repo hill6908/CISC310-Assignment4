@@ -127,14 +127,97 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		//loop through through the values in input 
 		for(int i = 4; i < input.size(); i ++)
 		{
-			//need to determine the type of the input 
+            //need to determine the type of the input 
 			std::cout << "before virt and phys find "<<std::endl;
 			virt_add = mmu->setValues(pid,input[2],offset);
 			phys_add = page_table->getPhysicalAddress(pid,virt_add);
 			
 			//need to be able to store all types of values here: 
 			std::cout << "Input to set is: " << input[i] <<std::endl;
-			memory[phys_add + ((i - 4) * typeOffset)] = std::stoi(input[i]);
+            std::cout << phys_add << std::endl;
+            if (type == "char"){
+                memory[phys_add + ((i - 4) * typeOffset)] = input[i].c_str()[0];
+            }
+            else if (type == "short"){
+                int value = std::stoi(input[i]);
+                int right = value & 255;
+                int left = (value & 65280)>>8;
+                memory[phys_add + ((i - 4) * typeOffset) + 1] = right;
+                memory[phys_add + ((i - 4) * typeOffset)] = left;
+            }
+            else if (type == "int"){
+                int value = std::stoi(input[i]);
+                int farRight = value & 255;
+                int nearRight = (value & 65280)>>8;
+                int nearLeft = (value & 16711680)>>16;
+                int farLeft = (value & 4278190080)>>24;
+                memory[phys_add + ((i - 4) * typeOffset) + 3] = farRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 2] = nearRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 1] = nearLeft;
+                memory[phys_add + ((i - 4) * typeOffset)] = farLeft;
+            }
+            else if (type == "float"){
+                int placeCount = input[i].length() - input[i].find('.') - 1;
+                mmu->setPlaces(pid, input[2], placeCount);
+                float tempValue = std::stof(input[i]);
+                for (int j = 0; j < placeCount; j++){
+                    tempValue = tempValue * 10;
+                }
+                int value = (int)tempValue;
+                int farRight = value & 255;
+                int nearRight = (value & 65280)>>8;
+                int nearLeft = (value & 16711680)>>16;
+                int farLeft = (value & 4278190080)>>24;
+                memory[phys_add + ((i - 4) * typeOffset) + 3] = farRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 2] = nearRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 1] = nearLeft;
+                memory[phys_add + ((i - 4) * typeOffset)] = farLeft;
+
+            }
+            else if (type == "long"){
+                long value = std::stol(input[i]);
+                long farFarRight = value & 255;
+                long farNearRight = (value & 65280)>>8;
+                long nearFarRight = (value & 16711680)>>16;
+                long nearNearRight = (value & 4278190080)>>24;
+                long nearNearLeft = (value & 1095216660480) >> 32;
+                long nearFarLeft = (value & 280375465082880) >> 40;
+                long farNearLeft = (value & 71776119061217280) >> 48;
+                long farFarLeft = (value & 18374686479671623680) >> 56;
+                memory[phys_add + ((i - 4) * typeOffset) + 7] = farFarRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 6] = farNearRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 5] = nearFarRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 4] = nearNearRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 3] = nearNearLeft;
+                memory[phys_add + ((i - 4) * typeOffset) + 2] = nearFarLeft;
+                memory[phys_add + ((i - 4) * typeOffset) + 1] = farNearLeft;
+                memory[phys_add + ((i - 4) * typeOffset)] = farFarLeft;
+            }
+            else if (type == "double"){
+                int placeCount = input[i].length() - input[i].find('.') - 1;
+                mmu->setPlaces(pid, input[2], placeCount);
+                double tempValue = std::stod(input[i]);
+                for (int j = 0; j < placeCount; j++){
+                    tempValue = tempValue * 10;
+                }
+                long value = long(tempValue);
+                long farFarRight = value & 255;
+                long farNearRight = (value & 65280)>>8;
+                long nearFarRight = (value & 16711680)>>16;
+                long nearNearRight = (value & 4278190080)>>24;
+                long nearNearLeft = (value & 1095216660480) >> 32;
+                long nearFarLeft = (value & 280375465082880) >> 40;
+                long farNearLeft = (value & 71776119061217280) >> 48;
+                long farFarLeft = (value & 18374686479671623680) >> 56;
+                memory[phys_add + ((i - 4) * typeOffset) + 7] = farFarRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 6] = farNearRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 5] = nearFarRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 4] = nearNearRight;
+                memory[phys_add + ((i - 4) * typeOffset) + 3] = nearNearLeft;
+                memory[phys_add + ((i - 4) * typeOffset) + 2] = nearFarLeft;
+                memory[phys_add + ((i - 4) * typeOffset) + 1] = farNearLeft;
+                memory[phys_add + ((i - 4) * typeOffset)] = farFarLeft;
+            }
 		}
 	}
 	else if(input[0] == "print")
@@ -170,6 +253,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
             std::string type = mmu->getType(pid, input[2]);
 
         	int i = 0;
+            std::cout << physcial_add << std::endl;
         	while(i < number_elements)
         	{
         		//for comma formatting:
@@ -180,23 +264,55 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                         break;
                     }
                     else if (type == "short"){
-                        std::cout << (short)memory[physcial_add+(i*2)];
+                        short value = 0;
+                        for (int j = 0; j < 2; j++){
+                            value = value + ((short)memory[physcial_add+(i*2)+j]<<(8*(1-j)));
+                        }
+                        std::cout << value;
                         break;
                     }
                     else if (type == "int"){
-                        std::cout << (int)memory[physcial_add+(i*4)];
+                        int value = 0;
+                        for (int j = 0; j < 4; j++){
+                            value = value + ((int)memory[physcial_add+(i*4)+j]<<(8*(3-j)));
+                        }
+                        std::cout << value;
                         break;
                     }
                     else if (type == "float"){
-                        std::cout << (float)memory[physcial_add+(i*4)];
+                        int value = 0;
+                        float endValue = 0;
+                        int places = mmu->getPlaces(pid, input[2]);
+                        for (int j = 0; j < 4; j++){
+                            value = value + ((int)memory[physcial_add+(i*4)+j]<<(8*(3-j)));
+                        }
+                        endValue = (float)value;
+                        for (int k = 0; k < places; k++){
+                            endValue = endValue / 10;
+                        }
+                        std::cout << endValue;
                         break;
                     }
                     else if (type == "long"){
-                        std::cout << (long)memory[physcial_add+(i*8)];
+                        long value = 0;
+                        for (int j = 0; j < 8; j++){
+                            value = value + ((long)memory[physcial_add+(i*8)+j]<<(8*(7-j)));
+                        }
+                        std::cout << value;
                         break;
                     }
                     else if (type == "double"){
-                        std::cout << (double)memory[physcial_add+(i*8)];
+                        long value = 0;
+                        double endValue = 0;
+                        int places = mmu->getPlaces(pid, input[2]);
+                        for (int j = 0; j < 8; j++){
+                            value = value + ((long)memory[physcial_add+(i*8)+j]<<(8*(7-j)));
+                        }
+                        endValue = (double)value;
+                        for (int k = 0; k < places; k++){
+                            endValue = endValue / 10;
+                        }
+                        std::cout << endValue;
                         break;
                     }
         		}
@@ -206,19 +322,51 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                         std::cout << memory[physcial_add+i] << ", ";
                     }
                     else if (type == "short"){
-                        std::cout << (short)memory[physcial_add+i] << ", ";
+                        short value = 0;
+                        for (int j = 0; j < 2; j++){
+                            value = value + ((short)memory[physcial_add+(i*2)+j]<<(8*(1-j)));
+                        }
+                        std::cout << value << ", ";
                     }
                     else if (type == "int"){
-                        std::cout << (int)memory[physcial_add+i] << ", ";
+                        int value = 0;
+                        for (int j = 0; j < 4; j++){
+                            value = value + ((int)memory[physcial_add+(i*4)+j]<<(8*(3-j)));
+                        }
+                        std::cout << value << ", ";
                     }
                     else if (type == "float"){
-                        std::cout << (float)memory[physcial_add+i] << ", ";
+                        int value = 0;
+                        float endValue = 0;
+                        int places = mmu->getPlaces(pid, input[2]);
+                        for (int j = 0; j < 4; j++){
+                            value = value + ((int)memory[physcial_add+(i*4)+j]<<(8*(3-j)));
+                        }
+                        endValue = (float)value;
+                        for (int k = 0; k < places; k++){
+                            endValue = endValue / 10;
+                        }
+                        std::cout << endValue << ", ";
                     }
                     else if (type == "long"){
-                        std::cout << (long)memory[physcial_add+i] << ", ";
+                        long value = 0;
+                        for (int j = 0; j < 8; j++){
+                            value = value + ((long)memory[physcial_add+(i*8)+j]<<(8*(7-j)));
+                        }
+                        std::cout << value << ", ";
                     }
                     else if (type == "double"){
-                        std::cout << (double)memory[physcial_add+i] << ", ";
+                        long value = 0;
+                        double endValue = 0;
+                        int places = mmu->getPlaces(pid, input[2]);
+                        for (int j = 0; j < 8; j++){
+                            value = value + ((long)memory[physcial_add+(i*8)+j]<<(8*(7-j)));
+                        }
+                        endValue = (double)value;
+                        for (int k = 0; k < places; k++){
+                            endValue = endValue / 10;
+                        }
+                        std::cout << endValue << ", ";
                     }
         		}
         		if(i == 4)

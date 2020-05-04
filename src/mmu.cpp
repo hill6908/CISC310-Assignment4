@@ -21,6 +21,7 @@ uint32_t Mmu::createProcess()
     var->size = _max_size;
     var->number_elements = 0;
     var->type = "free";
+    var->places = 0;
     proc->variables.push_back(var);
 
     _processes.push_back(proc);
@@ -87,6 +88,40 @@ std::string Mmu::getType(int pid, std::string name)
     }
 }
 
+void Mmu::setPlaces(int pid, std::string name, int numPlaces){
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size(); j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            proc->variables[j]->places = numPlaces;
+        }
+    }
+}
+
+int Mmu::getPlaces(int pid, std::string name){
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size(); j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            return proc->variables[j]->places;
+        }
+    }
+}
+
 void Mmu::createAllocate(int pid, int text_size, int data_size){
     Process *proc;
     for (int i = 0; i < _processes.size(); i++){
@@ -106,6 +141,7 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
     var->virtual_address = 0;
     var->size = text_size;
     var->type = "text";
+    var->places = 0;
     proc->variables.push_back(var);
 
     Variable *var1 = new Variable();
@@ -113,6 +149,7 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
     var1->virtual_address = text_size;
     var1->size = data_size;
     var1->type = "globals";
+    var->places = 0;
     proc->variables.push_back(var1);
 
     Variable *var2 = new Variable();
@@ -120,6 +157,7 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
     var2->virtual_address = text_size + data_size;
     var2->size = 65536;
     var2->type = "stack";
+    var->places = 0;
     proc->variables.push_back(var2);
 
     free->virtual_address = text_size + data_size + 65536;
@@ -152,11 +190,13 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
     {
         newVar->size = number_of_elements;
         newVar->type = "char";
+        newVar->places = 0;
     }
     else if(data_type == "short")
     {
         newVar->size = (2*number_of_elements);
         newVar->type = "short";
+        newVar->places = 0;
     }
     else if(data_type == "int" || data_type == "float")
     {
@@ -167,6 +207,7 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
         else{
             newVar->type = "float";
         }
+        newVar->places = 0;
     }
     else //its a long or a double
     {
@@ -177,6 +218,7 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
         else if (data_type == "double"){
             newVar->type = "double";
         }
+        newVar->places = 0;
     }
 
     newVar->number_elements = number_of_elements;
@@ -259,6 +301,7 @@ void Mmu::free(int pid, std::string name)
             proc->variables[j]->name = "<FREE_SPACE>";
             proc->variables[j]->number_elements = 0;
             proc->variables[j]->type = "free";
+            proc->variables[j]->places = 0;
         }
 
     }
