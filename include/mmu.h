@@ -29,6 +29,8 @@ public:
     Mmu(int memory_size);
     ~Mmu();
 
+    std::vector<std::string> getVariables(int pid);
+    int getSize(int pid, std::string name);
     int setValues(int pid, std::string name, int offset);
     int getNumVariables(int pid, std::string name);
     int getVirtualAddress(int pid, std::string name);

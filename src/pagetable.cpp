@@ -3,9 +3,7 @@
 PageTable::PageTable(int page_size)
 {
     _page_size = page_size;
-    current_page = 0;
 }
-
 PageTable::~PageTable()
 {
 
@@ -14,32 +12,31 @@ PageTable::~PageTable()
 int PageTable::getPageNumber(int virtual_address)
 {
     int page_number = virtual_address / _page_size;
-    std::cout << "page number = " <<page_number << " and page offset = " << virtual_address % _page_size <<std::endl;
 
     return page_number;
 }
 
+void PageTable::deleteEntry(uint32_t pid, int page_number)
+{
+    // get rid of the page from the map 
+    _table.erase(std::to_string(pid) + "|" + std::to_string(page_number));
+}
+
 void PageTable::addEntry(uint32_t pid, int page_number)
 {
-    //std::cout << "In add entry" <<std::endl;
     // Combination of pid and page number act as the key to look up frame number
     std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
 
-    // Find free frame
-    // TODO: implement this!
     //iterate through the map and find the last value of a frame & add 1?
     int frame = 0;
-   // std::cout << "Before for" <<std::endl;
     for (auto it : _table)
     {
         if(it.second > frame)
         {
             frame = it.second + 1;
-            std::cout << "frame: " << frame <<std::endl;
         }
     }
 
-    //std::cout << "frame = " << frame <<std::endl;
     //memory / page size = max number of pages 
     if(page_number > 67108864 / _page_size)
     {
@@ -51,23 +48,6 @@ void PageTable::addEntry(uint32_t pid, int page_number)
         _table[entry] = frame;
     }
 }
-
-/*
-void PageTable::create(int pid, int text_size, int data_size)
-{
-    //virtual address = pageNumber * page_size
-    if(text_size + data_size < _page_size)
-    {
-        //text and data can go on the same page
-        addEntry(pid,0);
-    }
-}*/
-
-/*int PageTable::allocate(int pid,  int number_of_elements)
-{
-
-
-}*/
 
 int PageTable::getPhysicalAddress(uint32_t pid, int virtual_address)
 {

@@ -41,14 +41,6 @@ int main(int argc, char **argv)
 
     	//found at: https://www.fluentcpp.com/2017/04/21/how-to-split-a-string-in-c/
     	std::vector<std::string> input (std::istream_iterator<std::string>{iss}, std::istream_iterator<std::string>());
-    
-    	/* For bug-fixing purposes:
-    	for(std::size_t i = 0; i < input.size(); i ++)
-    	{
-    		//print the command at input[i]
-    		std::cout << input[i];
-    	}
-		*/ 
 
     	parseCommandLineInput(input,memory,page_table,mmu);
         // Get next command
@@ -90,20 +82,16 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		//<PID><var_name><data_type><number_of_elements>
 		/* allocate memory on the heap, print the virtual memory address	*/ 
 		int virutal_mem = mmu->allocate(std::stoi(input[1]),input[2],input[3],std::stoi(input[4]));
-		std::cout << "Between mmu allocate and page_num" << std::endl;
 		int page_num = page_table->getPageNumber(virutal_mem);
 
-		std::cout << "page num = " << page_num <<std::endl;
 		page_table->addEntry(std::stoi(input[1]),page_num);
 
 	}
 	else if(input[0] == "set")
 	{
-		//set <PID><var_name><offset><value_0><value_1><value2>...<valueN>
 		/* set the value for variable <var_name> starting at <offset> 
 			multiple contiguous vales can be set with one command		*/
 
-		std::cout << "in set" <<std::endl;
 		int pid = std::stoi(input[1]);
 		int virt_add = 0;
 		int phys_add = 0;
@@ -128,12 +116,10 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		for(int i = 4; i < input.size(); i ++)
 		{
             //need to determine the type of the input 
-			std::cout << "before virt and phys find "<<std::endl;
 			virt_add = mmu->setValues(pid,input[2],offset);
 			phys_add = page_table->getPhysicalAddress(pid,virt_add);
 			
 			//need to be able to store all types of values here: 
-			std::cout << "Input to set is: " << input[i] <<std::endl;
             if (type == "char"){
                 memory[phys_add + ((i - 4) * typeOffset)] = input[i].c_str()[0];
             }
@@ -221,12 +207,6 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 	}
 	else if(input[0] == "print")
 	{
-		/*print options: 
-			print processes
-			print page
-			print mmu
-			print PID var_name (e.g.)
-				*/ 
 		if(input[1] == "page")
 		{
 			page_table->print();
@@ -380,10 +360,63 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 	}
 	else if(input[0] == "free")
 	{
+
 		//free <PID> <var_name>
-		/* deallocate memory on the heap that is associated with <var_name>		*/
         int pid = std::stoi(input[1]);
+		int size = mmu->getSize(pid, input[2]);
+
+		int num_elements = mmu->getNumVariables(pid, input[2]);
+		int virt = mmu->getVirtualAddress(pid,input[2]);
+		//loop through each of the variables' v_a and check which page they are on 
+
+		int increment = size/num_elements; 
+		int start_page = page_table->getPageNumber(virt);
+
+		//keep a list of the pages: 
+		std::vector<int> pages; 
+		pages.push_back(start_page);
+		for(int i = virt; i < virt + size; i += increment)
+		{
+			if(start_page != page_table->getPageNumber(i))
+			{
+				pages.push_back(i);
+			}
+		} 
+		
+		//used to see if pages only have one variable on them 
+		bool deleted [pages.size()] = {false};
+		std::vector<std::string> pid_variables = mmu->getVariables(pid);
+
+		for(int j =0; j < pid_variables.size(); j ++)
+		{
+			for(int k =0; k <pages.size(); k++)
+			{
+				int other_va = mmu->getVirtualAddress(pid,pid_variables[j]);
+				int other_page = page_table->getPageNumber(other_va);
+				if(other_page != pages[k])
+				{
+					//variable not on the same page 
+					deleted[k] = true;
+				}
+				else if (other_page == pages[k])
+				{
+					//variable on the same page 
+					deleted[k] = false;
+				}
+			}
+		}
+
+		for(int l = 0; l < pages.size(); l++)
+		{
+			if(deleted[l] == true)
+			{
+				//delete the page if there aren't any other variables on it
+				page_table->deleteEntry(pid, pages[l]);
+			}
+		}
+
 		mmu->free(pid,input[2]);
+
 	}
 
 	else if(input[0] == "terminate")

@@ -30,6 +30,24 @@ uint32_t Mmu::createProcess()
     return proc->pid;
 }
 
+int Mmu::getSize(int pid, std::string name)
+{
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
+        }
+    }
+
+    for(int j = 0; j < proc->variables.size();j++)
+    {
+        if(proc->variables[j]->name == name)
+        {
+            return proc->variables[j]->size;
+        }
+    }
+}
+
 int Mmu::getNumVariables(int pid, std::string name)
 {
     /*  use typeid to get the type and divide by the size of 
@@ -122,6 +140,7 @@ int Mmu::getPlaces(int pid, std::string name){
     }
 }
 
+
 void Mmu::createAllocate(int pid, int text_size, int data_size){
     Process *proc;
     for (int i = 0; i < _processes.size(); i++){
@@ -163,13 +182,28 @@ void Mmu::createAllocate(int pid, int text_size, int data_size){
     free->virtual_address = text_size + data_size + 65536;
 
     proc->variables.push_back(free);
-    for(int i = 0; i < proc->variables.size(); i++)
-    {
-        if(proc->variables[i]->name == "<FREE_SPACE>")
-        {
-            std::cout<< "Free space at: " << i << std::endl;
+}
+
+std::vector<std::string> Mmu::getVariables(int pid)
+{
+    Process *proc;
+    for (int i = 0; i < _processes.size(); i++){
+        if (_processes[i]->pid == pid){
+            proc = _processes[i];
         }
     }
+
+    std::vector<std::string> variables;
+    for(int j =0 ; j < proc->variables.size(); j++)
+    {
+        if(proc->variables[j]->name != "<FREE_SPACE>")
+        {
+            variables.push_back(proc->variables[j]->name);
+        }
+
+    }
+
+    return variables;
 }
 
 uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int number_of_elements){
@@ -232,12 +266,10 @@ uint32_t Mmu::allocate(int pid, std::string var_name, std::string data_type, int
     {
         if(proc->variables[i]->name == "<FREE_SPACE>" && proc->variables[i]->size >= newVar->size)
         {
-            std::cout << "free space" << std::endl;
             //found the free space 
             space = proc->variables[i];
 
-            //pop the free space off? 
-            //proc->variables.erase(proc->variables[i]);
+            //pop the free space off
             if(proc->variables[i] != proc->variables.back())
             {
                 //next variable isn't a free space 
@@ -302,6 +334,27 @@ void Mmu::free(int pid, std::string name)
             proc->variables[j]->number_elements = 0;
             proc->variables[j]->type = "free";
             proc->variables[j]->places = 0;
+
+            //combine with a free space in front 
+             if(proc->variables[j-1]->name == "<FREE_SPACE>")
+            {
+                //combine the free spaces
+                proc->variables[j-1]->size = proc->variables[j-1]->size + proc->variables[j]->size;
+
+                //get rid of the variable that was combined with the previous one 
+                proc->variables.erase(proc->variables.begin() + j);
+
+            }
+            //combine with a free space behind
+            if(j + 1 < proc->variables.size())
+            {
+                if(proc->variables[j+1]->name == "<FREE_SPACE>")
+                {
+                    int size_add = proc->variables[j]->size;
+                    proc->variables[j]->size = size_add + proc->variables[j+1]->size;
+                    proc->variables.erase(proc->variables.begin() + (j +1));
+                }
+            }
         }
 
     }
