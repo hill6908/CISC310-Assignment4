@@ -16,36 +16,52 @@ int PageTable::getPageNumber(int virtual_address)
     return page_number;
 }
 
+void PageTable::terminatePID(uint32_t pid){
+    int i = 0;
+    std::string entry = std::to_string(pid) + "|" + std::to_string(i);
+
+    while (_table.find(entry) != _table.end()){
+        _table.erase(entry);
+        i++;
+        entry = std::to_string(pid) + "|" + std::to_string(i);
+    }
+}
+
 void PageTable::deleteEntry(uint32_t pid, int page_number)
 {
     // get rid of the page from the map 
     _table.erase(std::to_string(pid) + "|" + std::to_string(page_number));
 }
 
-void PageTable::addEntry(uint32_t pid, int page_number)
+void PageTable::addEntry(uint32_t pid, int page_number, int size)
 {
-    // Combination of pid and page number act as the key to look up frame number
-    std::string entry = std::to_string(pid) + "|" + std::to_string(page_number);
+    int numLoops = (size / _page_size) + 1;
 
-    //iterate through the map and find the last value of a frame & add 1?
-    int frame = 0;
-    for (auto it : _table)
-    {
-        if(it.second > frame)
+    for (int i = 0; i < numLoops; i++){
+        // Combination of pid and page number act as the key to look up frame number
+        std::string entry = std::to_string(pid) + "|" + std::to_string(page_number+i);
+
+        //If entry is not already in the table
+        //memory / page size = max number of pages 
+        if((page_number + 1 * _page_size) + size > 67108864)
         {
-            frame = it.second + 1;
+            std::cout<< "Allocation would exceed system memory. ";
         }
-    }
+        else{
+            if (_table.find(entry) == _table.end()){
+                int frame = 0;
+                //iterate through the map and find the last value of a frame & add 1?
+                for (auto it : _table)
+                {
+                    if(it.second >= frame)
+                    {
+                        frame = it.second + 1;
+                    }
+                }
 
-    //memory / page size = max number of pages 
-    if(page_number > 67108864 / _page_size)
-    {
-        std::cout<< "Allocation would exceed system memory. ";
-    }
-
-    else
-    {
-        _table[entry] = frame;
+                _table[entry] = frame;
+            }
+        }
     }
 }
 

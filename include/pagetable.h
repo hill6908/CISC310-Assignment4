@@ -19,9 +19,10 @@ public:
 
     void deleteEntry(uint32_t pid, int page_number);
     int getPageNumber(int virtual_address);
-    void addEntry(uint32_t pid, int page_number);
+    void addEntry(uint32_t pid, int page_number, int size);
     int getPhysicalAddress(uint32_t pid, int virtual_address);
     void print();
+    void terminatePID(uint32_t pid);
 };
 
 #endif // __PAGETABLE_H_

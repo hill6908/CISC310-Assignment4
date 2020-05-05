@@ -71,9 +71,9 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
         int data_pg = page_table->getPageNumber(data_va);
         int stack_pg = page_table->getPageNumber(stack_va);
 
-        page_table->addEntry(pid,text_pg);
-        page_table->addEntry(pid,data_pg);
-        page_table->addEntry(pid,stack_pg);
+        page_table->addEntry(pid,text_pg, mmu->getSize(pid, "<TEXT>"));
+        page_table->addEntry(pid,data_pg, mmu->getSize(pid, "<GLOBALS>"));
+        page_table->addEntry(pid,stack_pg, mmu->getSize(pid, "<STACK>"));
 
         std::cout << pid << std::endl;
 	}
@@ -84,7 +84,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 		int virutal_mem = mmu->allocate(std::stoi(input[1]),input[2],input[3],std::stoi(input[4]));
 		int page_num = page_table->getPageNumber(virutal_mem);
 
-		page_table->addEntry(std::stoi(input[1]),page_num);
+		page_table->addEntry(std::stoi(input[1]),page_num, mmu->getSize(std::stoi(input[1]), input[2]));
 
 	}
 	else if(input[0] == "set")
@@ -261,7 +261,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                     else if (type == "float"){
                         int value = 0;
                         float endValue = 0;
-                        int places = mmu->getPlaces(pid, input[2]);
+                        int places = mmu->getPlaces(pid, var);
                         for (int j = 0; j < 4; j++){
                             value = value + ((int)memory[physcial_add+(i*4)+j]<<(8*(3-j)));
                         }
@@ -283,7 +283,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                     else if (type == "double"){
                         long value = 0;
                         double endValue = 0;
-                        int places = mmu->getPlaces(pid, input[2]);
+                        int places = mmu->getPlaces(pid, var);
                         for (int j = 0; j < 8; j++){
                             value = value + ((long)memory[physcial_add+(i*8)+j]<<(8*(7-j)));
                         }
@@ -322,7 +322,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                     else if (type == "float"){
                         int value = 0;
                         float endValue = 0;
-                        int places = mmu->getPlaces(pid, input[2]);
+                        int places = mmu->getPlaces(pid, var);
                         for (int j = 0; j < 4; j++){
                             value = value + ((int)memory[physcial_add+(i*4)+j]<<(8*(3-j)));
                         }
@@ -342,7 +342,7 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
                     else if (type == "double"){
                         long value = 0;
                         double endValue = 0;
-                        int places = mmu->getPlaces(pid, input[2]);
+                        int places = mmu->getPlaces(pid, var);
                         for (int j = 0; j < 8; j++){
                             value = value + ((long)memory[physcial_add+(i*8)+j]<<(8*(7-j)));
                         }
@@ -422,6 +422,8 @@ void parseCommandLineInput(std::vector<std::string> input, uint8_t *memory, Page
 	else if(input[0] == "terminate")
 	{
         int pid = stoi(input[1]);
+
+        page_table->terminatePID(pid);
 
         mmu->terminate(pid);
 	}
